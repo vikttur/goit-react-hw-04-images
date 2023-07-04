@@ -1,51 +1,45 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from '../Modal/Modal';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import css from './ImageGallery.module.css';
 
-export default class ImageGallery extends Component {
-  state = {
-    showModal: false,
-    modalProps: { src: '', alt: '' },
+export default function ImageGallery({ images }) {
+  const [showModal, setShowModal] = useState(false);
+  const [modalSrc, setModalSrc] = useState('');
+  const [modalAlt, setModalAlt] = useState('');
+
+  const handleCardClick = ({ largeImageURL: src, tags: alt }) => {
+    setModalSrc(src);
+    setModalAlt(alt);
+    toggleModal();
   };
 
-  handleCardClick = ({ largeImageURL: src, tags: alt }) => {
-    this.setState({ modalProps: { src, alt } });
-    this.toggleModal();
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
-  };
-
-  render() {
-    const { src, alt } = this.state.modalProps;
-
-    return (
-      <>
-        <ul className={css.gallery}>
-          {this.props.images.map(
-            ({ id, webformatURL, largeImageURL, tags }) => {
-              return (
-                <ImageGalleryItem
-                  key={String(id)}
-                  src={webformatURL}
-                  alt={tags}
-                  onClick={() => this.handleCardClick({ largeImageURL, tags })}
-                />
-              );
-            }
-          )}
-        </ul>
-        {this.state.showModal && (
-          <Modal onClose={this.toggleModal}>
-            <img src={src} alt={alt} />
-          </Modal>
-        )}
-      </>
-    );
-  }
+  return (
+    <div>
+      <ul className={css.gallery}>
+        {images.map(({ id, webformatURL, largeImageURL, tags }) => {
+          return (
+            <ImageGalleryItem
+              key={String(id)}
+              src={webformatURL}
+              alt={tags}
+              onClick={() => handleCardClick({ largeImageURL, tags })}
+            />
+          );
+        })}
+      </ul>
+      {showModal && (
+        <Modal onClose={toggleModal}>
+          <img src={modalSrc} alt={modalAlt} />
+        </Modal>
+      )}
+    </div>
+  );
 }
 
 ImageGallery.propTypes = {

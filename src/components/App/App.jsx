@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
-import { apiRequest } from '../serviceApi/serviceApi';
-import Searchbar from '../components/Searchbar/Searchbar';
-import NotFound from '../components/NotFound/NotFound';
-import ImageGallery from '../components/ImageGallery/ImageGallery';
-import Button from '../components/Button/Button';
-import Loader from '../components/Loader/Loader';
+import { apiRequest } from '../../serviceApi/serviceApi';
+import Searchbar from '../Searchbar/Searchbar';
+import NotFound from '../NotFound/NotFound';
+import ImageGallery from '../ImageGallery/ImageGallery';
+import Button from '../Button/Button';
+import Loader from '../Loader/Loader';
 import css from './App.module.css';
 
 const PER_PAGE = 12;
 
 export default class App extends Component {
   state = {
-    search: null,
+    search: '',
     page: 1,
     images: [],
     status: 'idle',
@@ -20,22 +20,15 @@ export default class App extends Component {
     isLoading: false,
   };
 
-  componentDidMount() {
-    this.setState({ search: '' });
-  }
-
   async componentDidUpdate(prevProps, prevState) {
     const { search, page } = this.state;
 
     if (prevState.search === search && prevState.page === page) return;
-    if (prevState.search !== search) {
-      this.setState({ status: 'pending' });
-      await this.reset();
-      await this.getImage();
-    }
+    await this.getImage();
   }
   getImage = () => {
     const { search, page } = this.state;
+    this.setState({ status: 'pending' });
 
     apiRequest(search, page, PER_PAGE)
       .then(response => {
@@ -64,11 +57,11 @@ export default class App extends Component {
 
   handleLoadMore = async () => {
     await this.incrementPage();
-    await this.getImage();
+    // await this.getImage();
   };
 
   recordOfSearchText = searchText => {
-    this.setState({ search: searchText });
+    this.setState({ search: searchText, page: 1, images: [] });
   };
 
   isLastPage = () => {
@@ -86,7 +79,7 @@ export default class App extends Component {
         {totalHits === 0 && <NotFound searchText={search} />}
         {status === 'idle' && <p>Enter a search query</p>}
         {status === 'pending' && <Loader />}
-        {status === 'resolved' && <ImageGallery images={images} />}
+        <ImageGallery images={images} />
         {status === 'resolved' && this.isLastPage() && (
           <Button onClick={this.handleLoadMore}>Load more</Button>
         )}
