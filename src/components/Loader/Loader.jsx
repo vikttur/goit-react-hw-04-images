@@ -5,7 +5,6 @@ export default function Loader() {
   return (
     <div className={css.loader}>
       <RotatingLines
-        // className={css.loader}
         visible="true"
         strokeColor="#5364c3"
         strokeWidth="5"

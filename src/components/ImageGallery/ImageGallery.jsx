@@ -15,9 +15,7 @@ export default function ImageGallery({ images }) {
     toggleModal();
   };
 
-  const toggleModal = () => {
-    setShowModal(!showModal);
-  };
+  const toggleModal = () => setShowModal(!showModal);
 
   return (
     <div>
@@ -34,9 +32,7 @@ export default function ImageGallery({ images }) {
         })}
       </ul>
       {showModal && (
-        <Modal onClose={toggleModal}>
-          <img src={modalSrc} alt={modalAlt} />
-        </Modal>
+        <Modal onClose={toggleModal} src={modalSrc} alt={modalAlt} />
       )}
     </div>
   );

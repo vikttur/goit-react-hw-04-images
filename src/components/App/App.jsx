@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { apiRequest } from '../../serviceApi/serviceApi';
 import Searchbar from '../Searchbar/Searchbar';
 import NotFound from '../NotFound/NotFound';
@@ -9,26 +9,21 @@ import css from './App.module.css';
 
 const PER_PAGE = 12;
 
-export default class App extends Component {
-  state = {
-    search: '',
-    page: 1,
-    images: [],
-    status: 'idle',
-    totalHits: null,
-    error: null,
-    isLoading: false,
-  };
+export default function App() {
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState('idle');
+  const [totalHits, setTotalHits] = useState(null);
+  const [error, setError] = useState(null);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { search, page } = this.state;
+  useEffect(() => {
+    if (search === '') return;
+    getImage();
+  }, [search, page]);
 
-    if (prevState.search === search && prevState.page === page) return;
-    await this.getImage();
-  }
-  getImage = () => {
-    const { search, page } = this.state;
-    this.setState({ status: 'pending' });
+  const getImage = () => {
+    setStatus('pending');
 
     apiRequest(search, page, PER_PAGE)
       .then(response => {
@@ -38,52 +33,43 @@ export default class App extends Component {
       .then(images => {
         const { totalHits, hits } = images;
 
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          status: 'resolved',
-          totalHits: totalHits,
-        }));
+        setImages(prevState => [...prevState, ...hits]);
+        setTotalHits(totalHits);
+        setStatus('resolved');
       })
-      .catch(error => this.setState({ error, status: 'rejected' }));
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      });
   };
 
-  reset = () => {
-    this.setState({ page: 1, images: [] });
+  const recordOfSearchText = searchText => {
+    setSearch(searchText);
+    setPage(1);
+    setImages([]);
   };
 
-  incrementPage = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+  const handleLoadMore = async () => await incrementPage();
 
-  handleLoadMore = async () => {
-    await this.incrementPage();
-    // await this.getImage();
-  };
+  const incrementPage = () => setPage(prevState => prevState + 1);
 
-  recordOfSearchText = searchText => {
-    this.setState({ search: searchText, page: 1, images: [] });
-  };
-
-  isLastPage = () => {
-    const { totalHits, page } = this.state;
+  const isNotLastPage = () => {
     return totalHits > page * PER_PAGE;
   };
 
-  render() {
-    const { status, error, search, images, totalHits, isLoading } = this.state;
-    if (status === 'rejected') return <div>{error.message}</div>;
-
+  if (status === 'rejected') {
+    return <div>{error.message}</div>;
+  } else {
     return (
       <div className={css.app}>
-        <Searchbar onSubmit={this.recordOfSearchText} />
+        <Searchbar onSubmit={recordOfSearchText} />
         {totalHits === 0 && <NotFound searchText={search} />}
         {status === 'idle' && <p>Enter a search query</p>}
         {status === 'pending' && <Loader />}
         <ImageGallery images={images} />
-        {status === 'resolved' && this.isLastPage() && (
-          <Button onClick={this.handleLoadMore}>Load more</Button>
+        {status === 'resolved' && isNotLastPage() && (
+          <Button onClick={handleLoadMore}>Load more</Button>
         )}
-        {isLoading && <Loader />}
       </div>
     );
   }
