@@ -50,7 +50,6 @@ export default function App() {
   };
 
   const handleLoadMore = async () => await incrementPage();
-
   const incrementPage = () => setPage(prevState => prevState + 1);
 
   const isNotLastPage = () => {
