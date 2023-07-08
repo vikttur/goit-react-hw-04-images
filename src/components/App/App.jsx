@@ -19,10 +19,7 @@ export default function App() {
 
   useEffect(() => {
     if (search === '') return;
-    getImage();
-  }, [search, page]);
 
-  const getImage = () => {
     setStatus('pending');
 
     apiRequest(search, page, PER_PAGE)
@@ -41,7 +38,7 @@ export default function App() {
         setError(error);
         setStatus('rejected');
       });
-  };
+  }, [search, page]);
 
   const recordOfSearchText = searchText => {
     setSearch(searchText);
